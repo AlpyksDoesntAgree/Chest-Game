@@ -14,11 +14,17 @@ public struct Loot
 public class ChestLogic : MonoBehaviour
 {
     public Loot Loot;
-    [SerializeField] private GameObject _lootName;
+    [SerializeField] private TextMeshPro _text;
     [SerializeField] private Transform _textPos;
-    private TextMeshPro _text;
     void Start()
     {
-        Debug.Log(Loot.LootName);
+        UpdateText();
+    }
+    public void UpdateText()
+    {
+        if (_text != null)
+        {
+            _text.text = $"{Loot.LootName}";
+        }
     }
 }

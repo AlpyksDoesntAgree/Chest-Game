@@ -15,7 +15,9 @@ public class ButtonManager : MonoBehaviour
         for (int i = 0; i < _chestScript.Chests.Length; i++)
         {
             _chestLogic = _chestScript.Chests[i].GetComponent<ChestLogic>();
+            _chestScript.Id = i;
             _chestLogic.Loot = _chestScript.GenerateLoot();
+            _chestLogic.UpdateText();
         }
     }
 }

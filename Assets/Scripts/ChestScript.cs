@@ -7,16 +7,16 @@ using UnityEngine;
 public class ChestScript : MonoBehaviour
 {
     private ChestLogic _lootFromChestLogic;
-    private int _id;
+    [HideInInspector] public int Id;
     private string _lootName;
     private int _random;
-    public GameObject[] Chests;
+    [HideInInspector] public GameObject[] Chests;
     void Start()
     {
         Chests = GameObject.FindGameObjectsWithTag("Chest");
         for (int i = 0; i < Chests.Length; i++)
         {
-            _id = i;
+            Id = i;
             _lootFromChestLogic = Chests[i].GetComponent<ChestLogic>();
             _lootFromChestLogic.Loot = LoadChest();
 
@@ -55,19 +55,19 @@ public class ChestScript : MonoBehaviour
     {
         Loot generatedLoot = new Loot()
         {
-            ChestID = _id,
+            ChestID = Id,
             LootName = _lootName
         };
 
         string json = JsonUtility.ToJson(generatedLoot);
-        string path = Path.Combine(Application.persistentDataPath, $"chest_{_id}.json");
+        string path = Path.Combine(Application.persistentDataPath, $"chest_{Id}.json");
         File.WriteAllText(path, json);
 
         return generatedLoot;
     }
     private Loot LoadChest()
     {
-        string path = Path.Combine(Application.persistentDataPath, $"chest_{_id}.json");
+        string path = Path.Combine(Application.persistentDataPath, $"chest_{Id}.json");
         if(File.Exists(path))
         {
             string json = File.ReadAllText(path);
@@ -76,7 +76,7 @@ public class ChestScript : MonoBehaviour
         }
         return new Loot()
         {
-            ChestID = _id,
+            ChestID = Id,
             LootName = null
         };
     }
