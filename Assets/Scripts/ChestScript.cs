@@ -32,19 +32,19 @@ public class ChestScript : MonoBehaviour
         switch (_random)
         {
             case 0:
-                _lootName = "Золото";
+                _lootName = "Gold";
                 break;
             case 1:
-                _lootName = "Уголь";
+                _lootName = "Coal";
                 break;
             case 2:
-                _lootName = "Сапог";
+                _lootName = "Boots";
                 break;
             case 3:
-                _lootName = "Алмаз";
+                _lootName = "Diamond";
                 break;
             case 4:
-                _lootName = "Монетка";
+                _lootName = "Coin";
                 break;
         }
 

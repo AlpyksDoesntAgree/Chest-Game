@@ -14,17 +14,26 @@ public struct Loot
 public class ChestLogic : MonoBehaviour
 {
     public Loot Loot;
-    [SerializeField] private TextMeshPro _text;
-    [SerializeField] private Transform _textPos;
-    void Start()
+    public GameObject TakeAnItemPanel;
+    public TextMeshProUGUI TakeAnItemText;
+    public Button[] InteractableBtns;
+    private ChestScript _chestScript;
+    private void Start()
     {
-        UpdateText();
+        _chestScript = GameObject.Find("GenerateLoot").GetComponent<ChestScript>();
+        TakeAnItemPanel.SetActive(false);
     }
-    public void UpdateText()
+    public void ChestClick()
     {
-        if (_text != null)
+        TakeAnItemPanel.SetActive(true);
+        TakeAnItemText.text = $"Would you like to take {Loot.LootName} from chest {Loot.ChestID}";
+        foreach(var item in InteractableBtns)
         {
-            _text.text = $"{Loot.LootName}";
+            item.interactable = false;
         }
-    }
+        foreach(var item in _chestScript.Chests)
+        {
+            item.GetComponent<Button>().interactable = false ;
+        }
+    }  
 }

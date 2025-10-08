@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ButtonManager : MonoBehaviour
 {
@@ -17,7 +19,26 @@ public class ButtonManager : MonoBehaviour
             _chestLogic = _chestScript.Chests[i].GetComponent<ChestLogic>();
             _chestScript.Id = i;
             _chestLogic.Loot = _chestScript.GenerateLoot();
-            _chestLogic.UpdateText();
+        }
+    }
+    public void CancelBtn()
+    {
+        foreach (var chest in _chestScript.Chests)
+        {
+            var chestLogic = chest.GetComponent<ChestLogic>();
+            if (chestLogic.TakeAnItemPanel.activeInHierarchy)
+            {
+                chestLogic.TakeAnItemPanel.SetActive(false);
+
+                foreach (var item in chestLogic.InteractableBtns)
+                {
+                    item.interactable = true;
+                }
+            }
+        }
+        foreach (var item in _chestScript.Chests)
+        {
+            item.GetComponent<Button>().interactable = true;
         }
     }
 }
