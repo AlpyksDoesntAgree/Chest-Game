@@ -51,11 +51,67 @@ public class ChestScript : MonoBehaviour
         _lootFromChestLogic.Loot = SaveChest();
         return _lootFromChestLogic.Loot;
     }
+    public Loot GenerateLoot(int chestID)
+    {
+        GameObject targetChest = null;
+        foreach (var item in Chests)
+        {
+            if (chestID == item.GetComponent<ChestLogic>().Loot.ChestID)
+            {  
+                targetChest = item; 
+                break;
+            }
+        }
+
+        if (targetChest == null)
+        {
+            Debug.LogError($"Chest with ID {chestID} not found!");
+        }
+
+        _lootFromChestLogic = targetChest.GetComponent<ChestLogic>();
+        _random = Random.Range(0, 5);
+        switch (_random)
+        {
+            case 0:
+                _lootName = "Gold";
+                break;
+            case 1:
+                _lootName = "Coal";
+                break;
+            case 2:
+                _lootName = "Boots";
+                break;
+            case 3:
+                _lootName = "Diamond";
+                break;
+            case 4:
+                _lootName = "Coin";
+                break;
+        }
+
+        _lootFromChestLogic.Loot = SaveChest(_lootFromChestLogic.Loot.ChestID);
+        return _lootFromChestLogic.Loot;
+    }
+    //Save Chest Перегрузки
     private Loot SaveChest()
     {
         Loot generatedLoot = new Loot()
         {
             ChestID = Id,
+            LootName = _lootName
+        };
+
+        string json = JsonUtility.ToJson(generatedLoot);
+        string path = Path.Combine(Application.persistentDataPath, $"chest_{Id}.json");
+        File.WriteAllText(path, json);
+
+        return generatedLoot;
+    }
+    private Loot SaveChest(int ChestID)
+    {
+        Loot generatedLoot = new Loot()
+        {
+            ChestID = ChestID,
             LootName = _lootName
         };
 
