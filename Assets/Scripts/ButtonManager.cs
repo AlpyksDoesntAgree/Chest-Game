@@ -12,11 +12,12 @@ public class ButtonManager : MonoBehaviour
     private ChestScript _chestScript;
     private ChestLogic _chestLogic;
     private UserInventory _userInventory;
-    [HideInInspector] public string ItemName;
-    [HideInInspector] public int ChestID;
+    [HideInInspector] public Loot LootFromChest;
     [SerializeField] private TextMeshProUGUI _textMeshProUGUI;
-    private int[] _updatedItemCounts = new int[] { 0, 0, 0, 0, 0 };
     [SerializeField] private TMP_InputField _inputField;
+
+    public GameObject TakeAnItemPanel;
+    public TextMeshProUGUI TakeAnItemText;
     void Start()
     {
         if (GameObject.Find("GenerateLoot") != null)
@@ -24,30 +25,28 @@ public class ButtonManager : MonoBehaviour
             _chestScript = GameObject.Find("GenerateLoot").GetComponent<ChestScript>();
             _userInventory = GameObject.Find("UserInventory").GetComponent<UserInventory>();
         }
-        SetText();
+        if (_textMeshProUGUI != null)
+            SetText();
     }
     public void RegenerateChestsBtn()
     {
         for (int i = 0; i < _chestScript.Chests.Length; i++)
         {
             _chestLogic = _chestScript.Chests[i].GetComponent<ChestLogic>();
-            _chestScript.Id = i;
-            _chestLogic.Loot = _chestScript.GenerateLoot();
+            Debug.Log(_chestLogic.Loot.ChestID);
+            _chestLogic.Loot = _chestScript.GenerateLoot(_chestLogic.Loot.ChestID);
         }
     }
     public void CancelBtn()
     {
+        //Close Panel & Turn On Btns
         foreach (var chest in _chestScript.Chests)
         {
             var chestLogic = chest.GetComponent<ChestLogic>();
-            if (chestLogic.TakeAnItemPanel.activeInHierarchy)
+            if (TakeAnItemPanel.activeInHierarchy)
             {
-                chestLogic.TakeAnItemPanel.SetActive(false);
-
-                foreach (var item in chestLogic.InteractableBtns)
-                {
-                    item.interactable = true;
-                }
+                TakeAnItemPanel.SetActive(false);
+                chestLogic.InteractableBtn.interactable = true;
             }
         }
         foreach (var item in _chestScript.Chests)
@@ -70,41 +69,30 @@ public class ButtonManager : MonoBehaviour
     }
     public void TakeBtn()
     {
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < LootFromChest.LootName.Count; i++)
         {
-            if (_userInventory.Inventory.Items[i] == ItemName)
+            string chestItem = LootFromChest.LootName[i];
+            for (int j = 0; j < _userInventory.Inventory.Items.Length; j++)
             {
-                _updatedItemCounts[i] = _userInventory.Inventory.CountItems[i] + 1;
-            }
-            else
-            {
-                _updatedItemCounts[i] = _userInventory.Inventory.CountItems[i];
+                if (_userInventory.Inventory.Items[j] == chestItem)
+                {
+                    _userInventory.Inventory.CountItems[j]++;
+                    break;
+                }
             }
         }
 
-        Inventory updatedInv = new Inventory()
-        {
-            UsName = _userInventory.Inventory.UsName,
-            Items = _userInventory.Inventory.Items,
-            CountItems = _updatedItemCounts,
-        };
-
-        _userInventory.SaveInventory(updatedInv.UsName, updatedInv.CountItems);
-        _userInventory.Inventory = updatedInv;
-
+        _userInventory.SaveInventory(_userInventory.Inventory.UsName, _userInventory.Inventory.CountItems);
         SetText();
 
+        //Close Panel & Turn On Btns
         foreach (var chest in _chestScript.Chests)
         {
             var chestLogic = chest.GetComponent<ChestLogic>();
-            if (chestLogic.TakeAnItemPanel.activeInHierarchy)
+            if (TakeAnItemPanel.activeInHierarchy)
             {
-                chestLogic.TakeAnItemPanel.SetActive(false);
-
-                foreach (var item in chestLogic.InteractableBtns)
-                {
-                    item.interactable = true;
-                }
+                TakeAnItemPanel.SetActive(false);
+                chestLogic.InteractableBtn.interactable = true;
             }
         }
         foreach (var item in _chestScript.Chests)
@@ -112,14 +100,15 @@ public class ButtonManager : MonoBehaviour
             item.GetComponent<Button>().interactable = true;
         }
 
-        _chestScript.GenerateLoot(ChestID);
+        _chestScript.GenerateLoot(LootFromChest.ChestID);
     }
     public void SetText()
     {
         _textMeshProUGUI.text = "";
-        for (int i = 0; i < _userInventory.Inventory.Items.Length; i++) {
-            _textMeshProUGUI.text += _userInventory.Inventory.Items[i].ToString() 
-                +"-"+ _userInventory.Inventory.CountItems[i].ToString() + '\n';
-        }     
+        for (int i = 0; i < _userInventory.Inventory.Items.Length; i++)
+        {
+            _textMeshProUGUI.text += _userInventory.Inventory.Items[i].ToString()
+                + "-" + _userInventory.Inventory.CountItems[i].ToString() + '\n';
+        }
     }
 }

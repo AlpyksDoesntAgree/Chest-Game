@@ -5,11 +5,13 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+
+//Structs
 [System.Serializable]
 public struct Loot
 {
     public int ChestID;
-    public string LootName;
+    public List<string> LootName;
 }
 [System.Serializable]
 public struct Inventory
@@ -18,30 +20,40 @@ public struct Inventory
     public string[] Items;
     public int[] CountItems;
 }
+
+
 public class ChestLogic : MonoBehaviour
 {
     public Loot Loot;
-    public GameObject TakeAnItemPanel;
-    public TextMeshProUGUI TakeAnItemText;
-    public Button[] InteractableBtns;
+    private GameObject _takeAnItemPanel;
+    private TextMeshProUGUI _takeAnItemText;
+    [HideInInspector] public Button InteractableBtn;
     private ChestScript _chestScript;
     private ButtonManager _btnManager;
     private void Start()
     {
         _chestScript = GameObject.Find("GenerateLoot").GetComponent<ChestScript>();
         _btnManager = GameObject.Find("ButtonManager").GetComponent<ButtonManager>();
-        TakeAnItemPanel.SetActive(false);
+
+        InteractableBtn = GameObject.Find("RegenerateBtn").GetComponent<Button>();
+        _takeAnItemPanel = _btnManager.TakeAnItemPanel;
+        _takeAnItemText = _btnManager.TakeAnItemText;
+
+        _takeAnItemPanel.SetActive(false);
     }
     public void ChestClick()
     {
-        _btnManager.ItemName = Loot.LootName;
-        _btnManager.ChestID = Loot.ChestID;
-        TakeAnItemPanel.SetActive(true);
-        TakeAnItemText.text = $"Would you like to take {Loot.LootName} from chest {Loot.ChestID}";
-        foreach(var item in InteractableBtns)
+        _btnManager.LootFromChest = Loot;
+        _takeAnItemPanel.SetActive(true);
+        _takeAnItemText.text = "";
+        for (int i = 0; i < Loot.LootName.Count; i++)
         {
-            item.interactable = false;
+            if(i == Loot.LootName.Count-1)
+                _takeAnItemText.text += $"{Loot.LootName[i]}.";
+            else
+                _takeAnItemText.text += $"{Loot.LootName[i]}, ";
         }
+        InteractableBtn.interactable = false;
         foreach(var item in _chestScript.Chests)
         {
             item.GetComponent<Button>().interactable = false ;

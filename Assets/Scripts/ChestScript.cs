@@ -8,9 +8,13 @@ public class ChestScript : MonoBehaviour
 {
     private ChestLogic _lootFromChestLogic;
     [HideInInspector] public int Id;
-    private string _lootName;
-    private int _random;
+    private List<string> _lootList = new List<string>();
+    private int _randomAmountOfItems;
+    private int _randomItem;
     [HideInInspector] public GameObject[] Chests;
+    [SerializeField] private int _maxAmount;
+    [SerializeField] private bool _isInfinite = true;
+
     void Start()
     {
         Chests = GameObject.FindGameObjectsWithTag("Chest");
@@ -18,113 +22,85 @@ public class ChestScript : MonoBehaviour
         {
             Id = i;
             _lootFromChestLogic = Chests[i].GetComponent<ChestLogic>();
-            _lootFromChestLogic.Loot = LoadChest();
+            _lootFromChestLogic.Loot = LoadChest(i);
 
             if (_lootFromChestLogic.Loot.LootName == null)
             {
-                GenerateLoot();
+                GenerateLoot(i);
             }
         }
     }
-    public Loot GenerateLoot()
-    {
-        _random = Random.Range(0, 5);
-        switch (_random)
-        {
-            case 0:
-                _lootName = "Gold";
-                break;
-            case 1:
-                _lootName = "Coal";
-                break;
-            case 2:
-                _lootName = "Boots";
-                break;
-            case 3:
-                _lootName = "Diamond";
-                break;
-            case 4:
-                _lootName = "Coin";
-                break;
-        }
 
-        _lootFromChestLogic.Loot = SaveChest();
-        return _lootFromChestLogic.Loot;
-    }
     public Loot GenerateLoot(int chestID)
     {
-        GameObject targetChest = null;
-        foreach (var item in Chests)
+        //Generate List
+        _lootList.Clear();
+        List<string> lootList = new List<string>();
+        if (_isInfinite)
         {
-            if (chestID == item.GetComponent<ChestLogic>().Loot.ChestID)
-            {  
-                targetChest = item; 
+            _randomAmountOfItems = Random.Range(3, int.MaxValue);
+        }
+        else
+        {
+            _randomAmountOfItems = Random.Range(3, _maxAmount+1);
+        }
+        for (int i = 0; i < _randomAmountOfItems; i++)
+        {
+            _randomItem = Random.Range(0, 5);
+            switch (_randomItem)
+            {
+                case 0:
+                    lootList.Add("Gold");
+                    break;
+                case 1:
+                    lootList.Add("Diamond");
+                    break;
+                case 2:
+                    lootList.Add("Coal");
+                    break;
+                case 3:
+                    lootList.Add("Boots");
+                    break;
+                case 4:
+                    lootList.Add("Coin");
+                    break;
+            }
+        }
+        _lootList = lootList;
+
+        foreach (var chest in Chests)
+        {
+            var chestLogic = chest.GetComponent<ChestLogic>();
+            if (chestLogic.Loot.ChestID == chestID)
+            {
+                _lootFromChestLogic = chestLogic;
                 break;
             }
         }
 
-        if (targetChest == null)
-        {
-            Debug.LogError($"Chest with ID {chestID} not found!");
-        }
-
-        _lootFromChestLogic = targetChest.GetComponent<ChestLogic>();
-        _random = Random.Range(0, 5);
-        switch (_random)
-        {
-            case 0:
-                _lootName = "Gold";
-                break;
-            case 1:
-                _lootName = "Coal";
-                break;
-            case 2:
-                _lootName = "Boots";
-                break;
-            case 3:
-                _lootName = "Diamond";
-                break;
-            case 4:
-                _lootName = "Coin";
-                break;
-        }
-
-        _lootFromChestLogic.Loot = SaveChest(_lootFromChestLogic.Loot.ChestID);
+        _lootFromChestLogic.Loot = SaveChest(chestID);
         return _lootFromChestLogic.Loot;
     }
-    //Save Chest Перегрузки
-    private Loot SaveChest()
+    private Loot SaveChest(int chestID)
     {
+        List<string> lootCopy = new List<string>(_lootList);
+
         Loot generatedLoot = new Loot()
         {
-            ChestID = Id,
-            LootName = _lootName
+            ChestID = chestID,
+            LootName = lootCopy
         };
 
         string json = JsonUtility.ToJson(generatedLoot);
-        string path = Path.Combine(Application.persistentDataPath, $"chest_{Id}.json");
+        string path = Path.Combine(Application.persistentDataPath, $"chest_{chestID}.json"); 
         File.WriteAllText(path, json);
 
         return generatedLoot;
     }
-    private Loot SaveChest(int ChestID)
+    private Loot LoadChest(int chestID)
     {
-        Loot generatedLoot = new Loot()
-        {
-            ChestID = ChestID,
-            LootName = _lootName
-        };
-
-        string json = JsonUtility.ToJson(generatedLoot);
-        string path = Path.Combine(Application.persistentDataPath, $"chest_{Id}.json");
-        File.WriteAllText(path, json);
-
-        return generatedLoot;
-    }
-    private Loot LoadChest()
-    {
-        string path = Path.Combine(Application.persistentDataPath, $"chest_{Id}.json");
-        if(File.Exists(path))
+        string path = Path.Combine(Application.persistentDataPath, $"chest_{chestID}.json"); 
+        if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
             Loot loadedLoot = JsonUtility.FromJson<Loot>(json);
@@ -132,7 +108,7 @@ public class ChestScript : MonoBehaviour
         }
         return new Loot()
         {
-            ChestID = Id,
+            ChestID = chestID,
             LootName = null
         };
     }
